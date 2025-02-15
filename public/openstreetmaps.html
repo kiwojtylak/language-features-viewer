@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let marker;
+
+        // Initialize the map
+        function initMap() {
+            map = L.map('map').setView([2.117754, -72.484184], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        // Wait for the DOM to fully load before attaching event listener
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("feature").addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    placePins();
+                }
+            });
+        });
+
+        // Load the DB from JSON export
+        async function loadDB() {
+            const response = await fetch('data/DB.json');
+            const db = await response.json();
+            return db;
+        }
+
+        // Fetch language details and place a pin on the map
+        async function placePins() {
+            const db = await loadDB();
+            const featureName = document.getElementById('feature').value;
+            const messageDiv = document.getElementById("message");
+
+            // Filter by feature name and status
+            const filtered = db.filter(entry => entry.feature.toLowerCase() === featureName.toLowerCase() && entry.status === 1);
+            if (filtered.length > 0) {
+                messageDiv.style.display = "none";  // Hide the message
+                const languages = new Set();
+                const languageData = [];
+                filtered.forEach(entry => {
+                    languages.add(entry.language);
+                    languageData.push({
+                        language: entry.language,
+                        latitude: entry.latitude,
+                        longitude: entry.longitude,
+                        legend: entry.legend
+                    });
+                });
+
+                // Remove any previous pins
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                // Create a bounds object to fit the map to all the markers
+                const bounds = new L.LatLngBounds();
+
+                // Place a pin for each language
+                languageData.forEach(entry => {
+                    const { latitude, longitude, legend, language, feature } = entry;
+
+                    // Create a custom SVG icon with dynamic color
+                    const customIcon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="48" viewBox="0 0 32 48">
+                                <!-- The main body of the pin -->
+                                <circle cx="16" cy="12" r="8" fill="${legend}" />
+                                <!-- The tail of the pin -->
+                                <path d="M16 20C12 20 8 28 8 36C8 38 10 40 12 40H20C22 40 24 38 24 36C24 28 20 20 16 20Z" fill="${legend}" />
+                            </svg>
+                        `,
+                        iconSize: [25, 41],  // Default size of the pin
+                        iconAnchor: [12, 41],  // Pin's anchor point (bottom center)
+                        popupAnchor: [0, -41],  // Popup will appear above the pin
+                    });
+                    const marker = L.marker([latitude, longitude], { icon: customIcon }).addTo(map);
+                    marker.bindPopup(`<strong>${language}</strong><br>${feature}`);
+                    marker.bindTooltip(language, {
+                        permanent: true,
+                        direction: 'right',
+                        offset: [10, 0],
+                        className: 'dark-mode-tooltip'
+                    });
+                    bounds.extend(marker.getLatLng());
+                });
+                // fit the map to show all markers within the bounds
+                map.fitBounds(bounds);
+            } else {
+                messageDiv.textContent = "Feature not found.";
+                messageDiv.style.display = "block";  // Show the message
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #ffffff;
+            font-weight: 500;
+        }
+        input {
+            background-color: #2b2b2b;
+            color: #ffffff;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+        input::placeholder {
+            color: #888;
+        }
+        button {
+            background-color: #3a3a3a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        #map {
+            height: 80vh;
+            width: 90%;
+            margin: 20px auto;
+            display: block;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        /* Custom styling for tooltips (labels) in dark mode */
+        .dark-mode-tooltip {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body onload="initMap()">
+    <h1>Language Features of the Caqueta-Putumayo</h1>
+    <input type="text" id="feature" size="50" placeholder="Enter feature name">
+    <button onclick="placePins()">Find feature</button>
+    <div id="message" style="color: #ff6b6b; font-size: 18px; margin-top: 10px; display: none;">Feature not found.</div>
+    <div id="map"></div>
+</body>
+</html>
