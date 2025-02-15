@@ -36,16 +36,50 @@
             return db;
         }
 
+        function ee(featureName) {
+            if (featureName.toLowerCase() === "nosia") {
+                const messageDiv = document.getElementById("message");
+                messageDiv.style.visibility = "hidden";
+
+                const today = new Date();
+                const cutoffDate = new Date("2025-03-10");
+                const nosiaCoords = today < cutoffDate
+                    ? [50.0647, 19.9450]
+                    : [49.4245, 20.9570];
+
+
+                // Remove previous pins
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                L.popup()
+                 .setLatLng(nosiaCoords)
+                 .setContent(`<strong>🐕 Nosia</strong>&nbsp;&nbsp;<br>`)
+                 .openOn(map);
+
+                // Center the map on Kraków
+                map.setView(nosiaCoords, 10);
+                return true;
+            }
+        }
+
         // Fetch language details and place a pin on the map
         async function placePins() {
-            const db = await loadDB();
             const featureName = document.getElementById('feature').value;
             const messageDiv = document.getElementById("message");
+
+            if(ee(featureName)) {  // EE
+                return;
+            }
+            const db = await loadDB();
 
             // Filter by feature name and status
             const filtered = db.filter(entry => entry.feature.toLowerCase() === featureName.toLowerCase() && entry.status === 1);
             if (filtered.length > 0) {
-                messageDiv.style.display = "none";  // Hide the message
+                messageDiv.style.visibility = "hidden";  // Hide the message
                 const languages = new Set();
                 const languageData = [];
                 filtered.forEach(entry => {
@@ -71,16 +105,15 @@
                 // Place a pin for each language
                 languageData.forEach(entry => {
                     const { latitude, longitude, legend, language, feature } = entry;
-
                     // Create a custom SVG icon with dynamic color
                     const customIcon = L.divIcon({
                         className: 'custom-marker',
                         html: `
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="48" viewBox="0 0 32 48">
-                                <!-- The main body of the pin -->
-                                <circle cx="16" cy="12" r="8" fill="${legend}" />
-                                <!-- The tail of the pin -->
-                                <path d="M16 20C12 20 8 28 8 36C8 38 10 40 12 40H20C22 40 24 38 24 36C24 28 20 20 16 20Z" fill="${legend}" />
+                                <!-- The main body of the pin with dark border -->
+                                <circle cx="16" cy="12" r="8" fill="${legend}" stroke="#000" stroke-width="1"/>
+                                <!-- The tail of the pin with dark border -->
+                                <path d="M16 20C12 20 8 28 8 36C8 38 10 40 12 40H20C22 40 24 38 24 36C24 28 20 20 16 20Z" fill="${legend}" stroke="#000" stroke-width="1"/>
                             </svg>
                         `,
                         iconSize: [25, 41],  // Default size of the pin
@@ -101,7 +134,7 @@
                 map.fitBounds(bounds);
             } else {
                 messageDiv.textContent = "Feature not found.";
-                messageDiv.style.display = "block";  // Show the message
+                messageDiv.style.visibility = "visible";  // Show the message
             }
         }
     </script>
@@ -158,7 +191,6 @@
             gap: 15px;
             margin-top: 20px;
         }
-        /* Custom styling for tooltips (labels) in dark mode */
         .dark-mode-tooltip {
             background-color: rgba(0, 0, 0, 0.7);
             color: #fff;
@@ -168,13 +200,23 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
         }
+        .error-message {
+            color: #ff6b6b;
+            font-size: 18px;
+            display: inline-block;
+            margin-left: 10px;
+            visibility: hidden; /* Initially hidden */
+        }
     </style>
 </head>
 <body onload="initMap()">
     <h1>Language Features of the Caqueta-Putumayo</h1>
-    <input type="text" id="feature" size="50" placeholder="Enter feature name">
-    <button onclick="placePins()">Find feature</button>
-    <div id="message" style="color: #ff6b6b; font-size: 18px; margin-top: 10px; display: none;">Feature not found.</div>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+        <input type="text" id="feature" size="50" placeholder="Enter feature name" style="margin-left: 150px;">
+        <button onclick="placePins()">Find feature</button>
+        <div id="message" class="error-message">Feature not found.</div>
+    </div>
     <div id="map"></div>
 </body>
+
 </html>
