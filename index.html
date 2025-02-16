@@ -144,7 +144,7 @@
                     bounds.extend(marker.getLatLng());
                 });
                 // fit the map to show all markers within the bounds
-                map.fitBounds(bounds);
+                map.fitBounds(bounds, { padding: [25, 25] });
             } else {
                 messageDiv.textContent = "Feature not found.";
                 messageDiv.style.visibility = "visible";  // Show the message
