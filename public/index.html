@@ -39,7 +39,7 @@
 
         // Load the DB from JSON export
         async function loadDB() {
-            const response = await fetch('data/lenguage_features.json');
+            const response = await fetch('data/languages_features.json');
             const db = await response.json();
             return db;
         }
