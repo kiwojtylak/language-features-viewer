@@ -39,7 +39,7 @@
 
         // Load the DB from JSON export
         async function loadDB() {
-            const response = await fetch('data/DB.json');
+            const response = await fetch('data/lenguage_features.json');
             const db = await response.json();
             return db;
         }
@@ -117,11 +117,16 @@
                     const customIcon = L.divIcon({
                         className: 'custom-marker',
                         html: `
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="48" viewBox="0 0 32 48">
-                                <!-- The main body of the pin with dark border -->
-                                <circle cx="16" cy="12" r="8" fill="${legend}" stroke="#000" stroke-width="1"/>
-                                <!-- The tail of the pin with dark border -->
-                                <path d="M16 20C12 20 8 28 8 36C8 38 10 40 12 40H20C22 40 24 38 24 36C24 28 20 20 16 20Z" fill="${legend}" stroke="#000" stroke-width="1"/>
+                            <!--
+                            // Little buddy
+                            <svg width="32" height="48" viewBox="0 0 32 48">
+                                <circle cx="16" cy="12" r="8" fill="${legend}" stroke="#555" stroke-width="1"/>
+                                <path d="M16 20C12 20 8 28 8 36C8 38 10 40 12 40H20C22 40 24 38 24 36C24 28 20 20 16 20Z" fill="${legend}" stroke="#555" stroke-width="1"/>
+                            </svg>
+                            -->
+                            <!-- Pin icon -->
+                            <svg width="32" height="48" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path fill-rule="evenodd" clip-rule="evenodd" d="M3.37892 10.2236L8 16L12.6211 10.2236C13.5137 9.10788 14 7.72154 14 6.29266V6C14 2.68629 11.3137 0 8 0C4.68629 0 2 2.68629 2 6V6.29266C2 7.72154 2.4863 9.10788 3.37892 10.2236Z" fill="${legend}" stroke="#555" stroke-width="1"/>
                             </svg>
                         `,
                         iconSize: [25, 41],  // Default size of the pin
