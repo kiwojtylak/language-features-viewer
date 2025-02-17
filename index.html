@@ -17,10 +17,10 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         let map;
+        const cpLocation = [2.117754, -72.484184]
 
         // Initialize the map
         function initMap() {
-            const cpLocation = [2.117754, -72.484184]
             map = L.map('map', { attributionControl: false }).setView(cpLocation, 7);
             // OpenStreetMaps
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -83,7 +83,7 @@
                     map.removeLayer(layer);
                 }
             });
-            // Close any open popups
+            // Close any open popups (EE)
             map.closePopup();
         }
 
@@ -97,6 +97,8 @@
                 return;
             }
 
+            // Recenter
+            map.setView(cpLocation, 7);
             const db = await loadDB();
 
             // Filter by feature name and status
