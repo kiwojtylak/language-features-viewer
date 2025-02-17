@@ -76,20 +76,31 @@
             }
         }
 
+        function clearAllPins() {
+            // Remove any previous pins
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
+        }
+
         // Fetch language details and place a pin on the map
         async function placePins() {
             const featureName = document.getElementById('feature').value;
             const messageDiv = document.getElementById("message");
 
-            if(ee(featureName)) {  // EE
+            // EE
+            if(ee(featureName)) {
                 return;
             }
+
             const db = await loadDB();
 
             // Filter by feature name and status
             const filtered = db.filter(entry => entry.feature.toLowerCase() === featureName.toLowerCase() && entry.status === 1);
             if (filtered.length > 0) {
-                messageDiv.style.visibility = "hidden";  // Hide the message
+                messageDiv.style.visibility = "hidden";  // Hide message
                 const languages = new Set();
                 const languageData = [];
                 filtered.forEach(entry => {
@@ -102,16 +113,10 @@
                     });
                 });
 
-                // Remove any previous pins
-                map.eachLayer(layer => {
-                    if (layer instanceof L.Marker) {
-                        map.removeLayer(layer);
-                    }
-                });
-
                 // Create a bounds object to fit the map to all the markers
                 const bounds = new L.LatLngBounds();
-
+                // Remove any previous pins
+                clearAllPins()
                 // Place a pin for each language
                 languageData.forEach(entry => {
                     const { latitude, longitude, legend, language, feature } = entry;
@@ -141,8 +146,9 @@
                 // fit the map to show all markers within the bounds
                 map.fitBounds(bounds, { padding: [20, 20] });
             } else {
-                messageDiv.textContent = "Feature not found.";
-                messageDiv.style.visibility = "visible";  // Show the message
+                clearAllPins()
+                messageDiv.textContent = "Feature not present.";
+                messageDiv.style.visibility = "visible";  // Show message
             }
         }
     </script>
