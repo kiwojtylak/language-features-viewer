@@ -20,7 +20,8 @@
 
         // Initialize the map
         function initMap() {
-            map = L.map('map').setView([2.117754, -72.484184], 7);
+            const cpLocation = [2.117754, -72.484184]
+            map = L.map('map').setView(cpLocation, 7);
             // OpenStreetMaps
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             // Carto Positron (Light theme)
