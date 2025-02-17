@@ -58,7 +58,6 @@
                     ? [50.0647, 19.9450]
                     : [49.4245, 20.9570];
 
-
                 // Remove previous pins
                 map.eachLayer(layer => {
                     if (layer instanceof L.Marker) {
@@ -68,7 +67,7 @@
 
                 L.popup()
                  .setLatLng(nosiaCoords)
-                 .setContent(`<strong>🐕 Nosia</strong>&nbsp;&nbsp;<br>`)
+                 .setContent(`<strong>🐶 Nosia</strong>&nbsp;&nbsp;<br>`)
                  .openOn(map);
 
                 // Center the map on Kraków
