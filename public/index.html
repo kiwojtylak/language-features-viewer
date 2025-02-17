@@ -83,6 +83,8 @@
                     map.removeLayer(layer);
                 }
             });
+            // Close any open popups
+            map.closePopup();
         }
 
         // Fetch language details and place a pin on the map
